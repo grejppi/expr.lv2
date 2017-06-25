@@ -1,0 +1,13 @@
+
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<urn:grejppi:randomtuner>
+	a             lv2:Plugin ;
+	lv2:binary    <randomtuner@LIB_EXT@> ;
+	rdfs:seeAlso  <randomtuner.ttl> .
+
+<urn:grejppi:exprsynth>
+	a             lv2:Plugin ;
+	lv2:binary    <exprsynth@LIB_EXT@> ;
+	rdfs:seeAlso  <exprsynth.ttl> .
