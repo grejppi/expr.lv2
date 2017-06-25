@@ -1,6 +1,6 @@
 /*
   Example LV2 plugin using note expressions
-  Copyright 2015 Henna Haahti <grejppi@gmail.com>
+  Copyright 2015-2017 Henna Haahti <grejppi@gmail.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
