@@ -29,7 +29,7 @@
 #define LV2_EXPR_PREFIX LV2_EXPR_URI ":"
 
 #define LV2_EXPR__Expression    LV2_EXPR_PREFIX "Expression"
-#define LV2_EXPR__tuning        LV2_EXPR_PREFIX "tuning"
+#define LV2_EXPR__pitchBend     LV2_EXPR_PREFIX "pitchBend"
 #define LV2_EXPR__stereoPanning LV2_EXPR_PREFIX "stereoPanning"
 #define LV2_EXPR__supports      LV2_EXPR_PREFIX "supports"
 

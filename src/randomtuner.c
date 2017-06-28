@@ -45,7 +45,7 @@ typedef struct {
 	LV2_Atom_Forge       forge;
 	LV2_Atom_Forge_Frame frame;
 
-	float tunings[2048];
+	float bend_values[2048];
 	float last_spread;
 
 	struct {
@@ -56,7 +56,7 @@ typedef struct {
 
 	struct {
 		LV2_URID expr_Expression;
-		LV2_URID expr_tuning;
+		LV2_URID expr_pitchBend;
 		LV2_URID midi_MidiEvent;
 		LV2_URID midi_channel;
 		LV2_URID midi_noteNumber;
@@ -88,7 +88,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 	LV2_URID_Map* map = self->map;
 	lv2_atom_forge_init(&self->forge, map);
 	self->uris.expr_Expression = map->map(map->handle, LV2_EXPR__Expression);
-	self->uris.expr_tuning     = map->map(map->handle, LV2_EXPR__tuning);
+	self->uris.expr_pitchBend  = map->map(map->handle, LV2_EXPR__pitchBend);
 	self->uris.midi_MidiEvent  = map->map(map->handle, LV2_MIDI__MidiEvent);
 	self->uris.midi_channel    = map->map(map->handle, LV2_MIDI__channel);
 	self->uris.midi_noteNumber = map->map(map->handle, LV2_MIDI__noteNumber);
@@ -143,7 +143,7 @@ run(LV2_Handle instance,
 
 	if (self->last_spread != *self->ports.spread) {
 		for (int i = 0; i < 2048; ++i) {
-			if (self->tunings[i] == 0) {
+			if (self->bend_values[i] == 0) {
 				continue;
 			}
 
@@ -158,8 +158,8 @@ run(LV2_Handle instance,
 			lv2_atom_forge_key(&self->forge, self->uris.midi_noteNumber);
 			lv2_atom_forge_int(&self->forge, i & 0x7f);
 
-			lv2_atom_forge_key(&self->forge, self->uris.expr_tuning);
-			lv2_atom_forge_float(&self->forge, self->tunings[i] * spread);
+			lv2_atom_forge_key(&self->forge, self->uris.expr_pitchBend);
+			lv2_atom_forge_float(&self->forge, self->bend_values[i] * spread);
 
 			lv2_atom_forge_pop(&self->forge, &frame);
 		}
@@ -179,7 +179,7 @@ run(LV2_Handle instance,
 			lv2_atom_forge_write(&self->forge, msg, 3);
 
 			if (lv2_midi_message_type (msg) == LV2_MIDI_MSG_NOTE_OFF) {
-				self->tunings[index] = 0.0;
+				self->bend_values[index] = 0.0;
 				continue;
 			}
 
@@ -194,10 +194,10 @@ run(LV2_Handle instance,
 			lv2_atom_forge_key(&self->forge, self->uris.midi_noteNumber);
 			lv2_atom_forge_int(&self->forge, msg[1]);
 
-			self->tunings[index] = cheap_rand();
+			self->bend_values[index] = cheap_rand();
 
-			lv2_atom_forge_key(&self->forge, self->uris.expr_tuning);
-			lv2_atom_forge_float(&self->forge, self->tunings[index] * spread);
+			lv2_atom_forge_key(&self->forge, self->uris.expr_pitchBend);
+			lv2_atom_forge_float(&self->forge, self->bend_values[index] * spread);
 
 			lv2_atom_forge_pop(&self->forge, &frame);
 		}

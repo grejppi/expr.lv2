@@ -46,7 +46,7 @@ typedef struct {
 	uint8_t channel;
 	uint8_t key;
 	int32_t counter;
-	float tuning;
+	float bend;
 	float velocity;
 } Voice;
 
@@ -66,7 +66,7 @@ typedef struct {
 	struct {
 		LV2_URID atom_Object;
 		LV2_URID expr_Expression;
-		LV2_URID expr_tuning;
+		LV2_URID expr_pitchBend;
 		LV2_URID midi_MidiEvent;
 		LV2_URID midi_channel;
 		LV2_URID midi_noteNumber;
@@ -99,7 +99,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 	LV2_URID_Map* map = self->map;
 	self->uris.atom_Object     = map->map(map->handle, LV2_ATOM__Object);
 	self->uris.expr_Expression = map->map(map->handle, LV2_EXPR__Expression);
-	self->uris.expr_tuning     = map->map(map->handle, LV2_EXPR__tuning);
+	self->uris.expr_pitchBend  = map->map(map->handle, LV2_EXPR__pitchBend);
 	self->uris.midi_MidiEvent  = map->map(map->handle, LV2_MIDI__MidiEvent);
 	self->uris.midi_channel    = map->map(map->handle, LV2_MIDI__channel);
 	self->uris.midi_noteNumber = map->map(map->handle, LV2_MIDI__noteNumber);
@@ -162,7 +162,7 @@ note_on(ExprSynth* self,
 	v->key = key;
 	v->velocity = velocity / 127.0f;
 
-	v->tuning = 0.0f;
+	v->bend = 0.0f;
 }
 
 static void
@@ -179,15 +179,15 @@ note_off(ExprSynth* self,
 }
 
 static void
-apply_tuning(ExprSynth* self,
-             uint8_t    channel,
-             uint8_t    key,
-             float      tuning)
+apply_bend(ExprSynth* self,
+           uint8_t    channel,
+           uint8_t    key,
+           float      bend)
 {
 	for (int i = 0; i < NVOICES; ++i) {
 		Voice* v = &self->voices[i];
 		if (v->channel == channel && v->key == key) {
-			v->tuning = tuning;
+			v->bend = bend;
 		}
 	}
 }
@@ -204,7 +204,7 @@ render(ExprSynth* self,
 			continue;
 		}
 
-		float hz = KEY2HZ(v->key + v->tuning);
+		float hz = KEY2HZ(v->key + v->bend);
 
 		for (uint32_t i = a; i < b; ++i) {
 			v->counter += lrintf((float)((uint32_t)-1) / (self->rate / hz));
@@ -244,21 +244,21 @@ run(LV2_Handle instance,
 
 			const LV2_Atom_Int*   channel = NULL;
 			const LV2_Atom_Int*   note    = NULL;
-			const LV2_Atom_Float* tuning  = NULL;
+			const LV2_Atom_Float* bend    = NULL;
 
 			LV2_Atom_Object_Query q[] = {
 				{ self->uris.midi_channel,    (const LV2_Atom**)&channel },
 				{ self->uris.midi_noteNumber, (const LV2_Atom**)&note },
-				{ self->uris.expr_tuning,     (const LV2_Atom**)&tuning },
+				{ self->uris.expr_pitchBend,  (const LV2_Atom**)&bend },
 				LV2_ATOM_OBJECT_QUERY_END
 			};
 			lv2_atom_object_query(object, q);
 
-			if (!channel || !note || !tuning) {
+			if (!channel || !note || !bend) {
 				continue;
 			}
 
-			apply_tuning(self, channel->body, note->body, tuning->body);
+			apply_bend(self, channel->body, note->body, bend->body);
 		}
 
 		render(self, offset, ev->time.frames);
